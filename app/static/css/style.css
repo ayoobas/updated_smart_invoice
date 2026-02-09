@@ -1,0 +1,30 @@
+.hidden {
+    display: none !important;
+}
+
+.custom-tabs .nav-link {
+    color: #6c757d;
+    border: none;
+    border-bottom: 3px solid transparent;
+}
+
+.custom-tabs .nav-link.active {
+    color: #198754 !important; /* Bootstrap Success Green */
+    background-color: transparent !important;
+    border-bottom: 3px solid #198754 !important;
+}
+
+.signature-container canvas {
+    cursor: crosshair;
+    touch-action: none;
+}
+
+.cdetails:not(.hidden) {
+    display: flex !important; /* Ensure it stays a flex/row container */
+    animation: slideDown 0.4s ease-out forwards;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
