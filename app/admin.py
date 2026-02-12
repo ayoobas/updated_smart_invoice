@@ -15,7 +15,7 @@ class CropitemModelAdmin(ImportExportModelAdmin):
 
 @admin.register(Invoice)
 class InvoiceModelAdmin(ImportExportModelAdmin):
-    list_display = ('customer_id','tomatoes', 'bell_pepper', 'cucumber',
+    list_display = ('id','customer_id','tomatoes', 'bell_pepper', 'cucumber',
                     'abernero', 'discount','total_price', 'invoice_number','created_at')
 
 @admin.register(CustomerInfo)

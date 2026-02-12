@@ -70,22 +70,26 @@ def regcustomer(request):
 
 #to search for customer information 
 def search_customer(request):
-    query = request.GET.get('query', '')
-    customer = CustomerInfo.objects.filter(Q(email=query) | Q(phone_no=query)).first()
+    searchvalue = request.GET.get('rname').strip()
+    customer = None
+    if searchvalue:
+        customer = CustomerInfo.objects.filter(
+            Q(email=searchvalue) | Q(phone_no=searchvalue)).first()
+    else:
+        messages.warning("Enter a search value")
+        
+        print('customer', customer)
 
-    if customer:
-        return JsonResponse({
-            'success': True,
-            'id': customer.id, # Send the ID to the frontend
-            'name': customer.name,
-            'address': customer.address,
-            'phone': customer.phone_no,
-            'email': customer.email,
-        })
-    
-    return JsonResponse({'success': False})
+    # DO THIS: Ensure this is a dictionary
+    context = {
+        'customer': customer,           # Key is 'customer', Value is the object
+        'items': Cropitem.objects.all() # Key is 'items', Value is the queryset
+    }
 
+    return render(request, "index.html", context)
 
+  
+  
 
 
 def generate_invoice(request):
@@ -122,7 +126,7 @@ def generate_invoice(request):
         # 4. Save to Invoice Model
         try:
             new_invoice = Invoice.objects.create(
-                customer_id=customer_id,
+                customer_id_id=customer_id,
                 tomatoes=qty_tomatoes,
                 bell_pepper=qty_bell_pepper,
                 cucumber=qty_cucumber,
@@ -155,6 +159,8 @@ def view_invoice(request, pk):
     rate_a = rates.get('Abanero', 0)
 
     invoice = get_object_or_404(Invoice, pk=pk)
+   # customer = get_object_or_404(CustomerInfo, pk=invoice).first()
+    customer = CustomerInfo.objects.filter(invoice__pk=pk).first()
 
     print('invoice',invoice)
     
@@ -163,7 +169,8 @@ def view_invoice(request, pk):
         'rate_t':rate_t,
         'rate_b':rate_b,
         'rate_c':rate_c,
-        'rate_a':rate_a
+        'rate_a':rate_a,
+        'customer':customer
     }
     return render(request, 'success.html', context)
 

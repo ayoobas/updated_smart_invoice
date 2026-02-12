@@ -1,7 +1,6 @@
-{% extends 'base.html' %}
+{% extends 'successlibries.html' %}
 {% load static %}
 {% block title %}Grocery Store{% endblock title %}
-
 
 {% block main-content %}
 <div class="container mt-5 mb-5">
@@ -28,9 +27,9 @@
         <div class="row my-5">
             <div class="col-12">
                 <h6 class="text-uppercase fw-bold text-muted small mb-3">Bill To:</h6>
-                <h4 class="mb-1">{{ invoice.name }}</h4>
-                <p class="text-muted mb-0">{{ invoice.address }}</p>
-                <p class="text-muted mb-0">{{ invoice.phone_no }} | {{ invoice.email }}</p>
+                <h4 class="mb-1">{{ customer.name }}</h4>
+                <p class="text-muted mb-0">{{ customer.address }}</p>
+                <p class="text-muted mb-0">{{ customer.phone_no }} | {{ customer.email }}</p>
             </div>
         </div>
 
@@ -101,8 +100,8 @@
                 <p class="small text-muted">Thank you for shopping at Obaz Grocery Store. Goods sold in good condition are not returnable.</p>
             </div>
             <div class="col-4 offset-2 text-center">
-                {% if invoice.image %}
-                    <img src="{{ invoice.image.url }}" alt="Signature" class="img-fluid" style="max-height: 80px; width: auto; border-bottom: 2px solid #333;">
+                {% if customer.image %}
+                    <img src="{{ customer.image.url }}" alt="Signature" class="img-fluid" style="max-height: 80px; width: auto; border-bottom: 2px solid #333;">
                 {% else %}
                     <div style="height: 80px; border-bottom: 2px solid #333;"></div>
                 {% endif %}

@@ -99,7 +99,7 @@
 
         <div class="tab-pane fade" id="invoice-panel" role="tabpanel">
             <div class="card shadow-sm border-0 p-4">
-                <form action="{% url 'generate_invoice' %}" method="POST">
+             
                     {% csrf_token %}
                        {% if messages %}
             {% for msg in messages %}
@@ -109,16 +109,25 @@
             {% endfor %}
           {% endif %}
 
-                    <div class="row mb-4">
+                    <form method="GET" action="{% url 'search_customer' %}" class="row mb-4">
+                          {% csrf_token %}
+                           {% if messages %}
+                    {% for msg in messages %}
+              <div class="alert alert-{{ msg.tags }}" role="alert">
+                {{ msg }}
+              </div>
+                        {% endfor %}
+                      {% endif %}
                         <div class="col-md-9">
                             <input type="text" class="form-control" name="rname" placeholder="Enter Registered Email or Phone to Search" required>
                         </div>
                         <div class="col-md-3">
-                            <button type="submit" id = "csearch" class="btn btn-outline-success w-100">Search</button>
+                            <button type="submit"  class="btn btn-outline-success w-100">Search</button>
                         </div>
                     </div>
+                    </form>
                     {% comment %} customer details section {% endcomment %}
-<div class="row p-4 mb-4 border-0 rounded-4 shadow-sm hidden cdetails" 
+<div class="row p-4 mb-4 border-0 rounded-4 shadow-sm  cdetails" 
      style="background-color: #f0f9f4; border-left: 5px solid #198754 !important;">
     
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -137,33 +146,39 @@
         </button>
     </div>
 
-    <input type="hidden" name="customer_id"  id="customer_id">
+
+{% if customer %}
+   
  
 
     <div class="row g-4">
         <div class="col-md-6">
             <p class="text-muted small text-uppercase fw-bold mb-1">Customer Name</p>
-            <span id="cname" class="text-dark fw-bold fs-5">---</span>
+            <span id="cname" class="text-dark fw-bold fs-5">{{ customer.name }}</span>
         </div>
         
         <div class="col-md-6">
             <p class="text-muted small text-uppercase fw-bold mb-1">Email Address</p>
-            <span id="cemail" class="text-dark fw-medium">---</span>
+            <span id="cemail" class="text-dark fw-medium">{{ customer.email }}</span>
         </div>
 
         <div class="col-md-6">
             <p class="text-muted small text-uppercase fw-bold mb-1">Phone Number</p>
-            <span id="cphoneno" class="text-dark fw-medium font-monospace">---</span>
+            <span id="cphoneno" class="text-dark fw-medium font-monospace">{{ customer.phone_no }}</span>
         </div>
 
         <div class="col-md-6">
             <p class="text-muted small text-uppercase fw-bold mb-1">Delivery Address</p>
-            <span id="caddress" class="text-dark fw-medium">---</span>
+            <span id="caddress" class="text-dark fw-medium">{{ customer.address }}</span>
         </div>
+     
     </div>
 </div>
  {% comment %} End customer details section {% endcomment %}
-                    
+                   <form action="{% url 'generate_invoice' %}" method="POST">   
+           <input type="hidden" name="customer_id" value = "{{ customer.id }}" id="customer_id">
+                 {% endif %}
+                  {% csrf_token %}
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
                             <thead class="table-light">
@@ -319,100 +334,7 @@ const canvas = document.getElementById('signature-pad');
         tab.show();
     }
 
-//search for customer record 
-const searchBtn = document.getElementById('csearch');
-    const customerCard = document.querySelector('.cdetails');
 
-    searchBtn.addEventListener('click', function(e) {
-        e.preventDefault(); // Prevent the form from refreshing the page
-
-        const query = document.querySelector('input[name="rname"]').value.trim();
-
-        if (!query) {
-            alert("Please enter an email or phone number to search.");
-            return;
-        }
-
-        // Show a loading state on the button
-        const originalBtnText = searchBtn.innerHTML;
-        searchBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Searching...';
-        searchBtn.disabled = true;
-
-        // Perform the AJAX Fetch
-        fetch(`/search-customer/?query=${encodeURIComponent(query)}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // 1. Inject the data into your spans
-                    document.getElementById('cname').innerText = data.name;
-                    document.getElementById('caddress').innerText = data.address;
-                    document.getElementById('cphoneno').innerText = data.phone;
-                    document.getElementById('cemail').innerText = data.email;
-                    document.getElementById('customer_id').innerText = data.id;
-
-                    // 2. Reveal the section
-                    customerCard.classList.remove('hidden');
-                    
-                    // Optional: Smoothly scroll to the details
-                    customerCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } else {
-                    alert("Customer not found. Please register them first.");
-                    customerCard.classList.add('hidden');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("An error occurred while searching.");
-            })
-            .finally(() => {
-                // Reset button state
-                searchBtn.innerHTML = originalBtnText;
-                searchBtn.disabled = false;
-            });
-    });
-
-//Reset button 
-// Select the elements
-    const resetBtn = document.getElementById('reset-customer');
-   
-    const searchInput = document.querySelector('input[name="rname"]');
-    const hiddenCustomerId = document.getElementById('customer_id');
-
-    // List of all span IDs that hold customer data
-    const dataSpans = ['cname', 'caddress', 'cphoneno', 'cemail'];
-
-    if (resetBtn) {
-        resetBtn.addEventListener('click', function() {
-            // 1. Hide the customer details card
-            customerCard.classList.add('hidden');
-
-            // 2. Clear the hidden ID (crucial for database integrity)
-            if (hiddenCustomerId) {
-                hiddenCustomerId.value = '';
-            }
-
-            // 3. Clear the search input field
-            if (searchInput) {
-                searchInput.value = '';
-                searchInput.classList.remove('is-invalid'); // Clear any error styling
-            }
-
-            // 4. Reset all display spans to default state
-            dataSpans.forEach(spanId => {
-                const element = document.getElementById(spanId);
-                if (element) {
-                    element.innerText = '---';
-                }
-            });
-
-            // 5. Place the cursor back in the search box for a fresh start
-            if (searchInput) {
-                searchInput.focus();
-            }
-            
-            console.log("Customer selection cleared.");
-        });
-    }
 
 });
 
