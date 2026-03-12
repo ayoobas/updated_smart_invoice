@@ -9,6 +9,15 @@ import uuid
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.db.models import Q
+from io import BytesIO
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from django.core.mail import EmailMessage
+from django.conf import settings
+#for whatsapp
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from twilio.twiml.messaging_response import MessagingResponse
 
 #To load the rates and display them
 def home(request):
@@ -75,21 +84,35 @@ def search_customer(request):
     if searchvalue:
         customer = CustomerInfo.objects.filter(
             Q(email=searchvalue) | Q(phone_no=searchvalue)).first()
+        print('customer', customer)
+        messages.success(request,"Customer retrieved successufully")
+        
     else:
         messages.warning("Enter a search value")
         
-        print('customer', customer)
+       
 
     # DO THIS: Ensure this is a dictionary
     context = {
         'customer': customer,           # Key is 'customer', Value is the object
         'items': Cropitem.objects.all() # Key is 'items', Value is the queryset
     }
-
     return render(request, "index.html", context)
 
   
   
+
+#TO render html to pdf
+def render_to_pdf(template_src, context_dict):
+    template = get_template(template_src)
+    html = template.render(context_dict)
+    result = BytesIO()
+    # Note: we add encoding to handle the Naira ₦ symbol correctly
+    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+    if not pdf.err:
+        return result.getvalue()
+    return None
+
 
 
 def generate_invoice(request):
@@ -135,6 +158,36 @@ def generate_invoice(request):
                 total_price=final_total,
                 created_at=createdate if createdate else timezone.now().date()
             )
+            context = {
+                'invoice': new_invoice,
+                'customer': new_invoice.customer_id, # Ensure this is the model object
+                'rate_t': rates.get('Tomatoes', 0),
+                'rate_b': rates.get('Bell_Pepper', 0),
+                'rate_c': rates.get('Cucumber', 0),
+                'rate_a': rates.get('Abanero', 0),
+            }
+
+            #for email part
+            # 2. Generate the PDF content
+            pdf_content = render_to_pdf('success.html', context)
+
+            if pdf_content:
+                # 3. Construct the Email
+                subject = f"Invoice from OBAZ GROCERY - #{new_invoice.id}"
+                message = f"Dear {new_invoice.customer_id.name},\n\nThank you for your purchase. Please find your invoice attached.\n\nBest regards,\nObaz Grocery Team"
+                recipient = new_invoice.customer_id.email
+
+                email = EmailMessage(
+                    subject,
+                    message,
+                    settings.EMAIL_HOST_USER,
+                    [recipient]
+                )
+                
+                # Attach the generated PDF
+                email.attach(f'Invoice_{new_invoice.id}.pdf', pdf_content, 'application/pdf')
+                email.send()
+
             messages.success(request, "✅ Records saved successfully!")
             return redirect('view_invoice', pk=new_invoice.pk)
             
@@ -146,6 +199,9 @@ def generate_invoice(request):
     # GET Request: Load items for the table and show the form
     items = Cropitem.objects.all()
     return render(request, 'index.html', {'items': items})
+
+
+
 
 #To view the invoice generated
 
@@ -174,5 +230,27 @@ def view_invoice(request, pk):
     }
     return render(request, 'success.html', context)
 
+
+
+
+
+@csrf_exempt
+def whatsapp_webhook(request):
+    # 1. Get the message and the sender's number
+    incoming_msg = request.POST.get('Body', '').lower()
+    sender_number = request.POST.get('From')
+    
+    print(f"New message from {sender_number}: {incoming_msg}")
+
+    # 2. Create a response
+    response = MessagingResponse()
+    msg = response.message()
+    
+    if 'invoice' in incoming_msg:
+        msg.body("Sure! Please provide your ID and I will check your last invoice.")
+    else:
+        msg.body("Hello from Obaz Grocery! How can we help you today?")
+
+    return HttpResponse(str(response), content_type='text/xml')
 
 

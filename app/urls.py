@@ -10,4 +10,5 @@ urlpatterns = [
    
      path('invoice/<int:pk>/', views.view_invoice, name="view_invoice"),
      path('search-customer/', views.search_customer, name='search_customer'),
+     path('whatsapp/webhook/', views.whatsapp_webhook, name='whatsapp_webhook'),
  ]+ static( settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

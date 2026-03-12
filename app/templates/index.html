@@ -79,9 +79,9 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Phone No</label>
-                            <input type="number" class="form-control" name="phoneno" required>
+                            <input type="number" class="form-control" name="phoneno" required placeholder = "Enter valid phone no">
                             <label class="form-label mt-2">Email</label>
-                            <input type="email" name="email" class="form-control">
+                            <input type="email" name="email" class="form-control" placeholder = "Enter valid email">
                         </div>
                         <div class="col-md-12 mt-3">
                             <label class="fw-bold text-success mb-2"><i class="fas fa-pen-nib"></i> Authorized Signature</label>
@@ -221,11 +221,17 @@
                         <button type="submit" name="action" value="pdf" class="btn btn-success btn-lg flex-grow-1">Generate Invoice</button>
                     </div>
                 </form>
+      
+  
             </div>
         </div>
     </div>
 </div>
-    
+  {% comment %} <a href="{% url 'whatsapp_webhook' %}" class="whatsapp-btn" target="_blank">
+    <i class="fab fa-whatsapp me-2"></i> Chat with Us</a> {% endcomment %}
+    <a href="https://wa.me/2348068173311?text=Hello%20Obaz%20Grocery" 
+   class="whatsapp-btn"  target="_blank">
+    <i class="fab fa-whatsapp me-2"></i> Chat with Us </a>
 
 <script>
 

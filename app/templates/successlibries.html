@@ -18,6 +18,20 @@
     <link rel = "stylesheet" href = "{% static '/css/owl.carousel.min.css' %}" />
     <link rel = "stylesheet" href = "{% static '/css/all.min.css' %}" />
      <link rel = "stylesheet" href = "{% static '/css/style.css' %}" />
+     <style>
+    /* Adds a 2px border around the entire table */
+    .invoice-table {
+        border: 1px solid #333 !important;
+        border-collapse: collapse;
+        padding: 2px;  
+        text-align: center; /* This centers all text in the table */
+    }
+
+    /* Adds a 1px line between the rows for better readability */
+    .invoice-table th, .invoice-table td {
+        border-bottom: 1px solid #dee2e6;
+    }
+</style>
 </head>
 <body>
  
